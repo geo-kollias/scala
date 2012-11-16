@@ -213,7 +213,12 @@ abstract class ToolBoxFactory[U <: JavaUniverse](val u: U) { factorySelf =>
           def makeParam(schema: (FreeTermSymbol, TermName)) = {
             // see a detailed explanation of the STABLE trick in `GenSymbols.reifyFreeTerm`
             val (fv, name) = schema
-            meth.newValueParameter(name, newFlags = if (fv.hasStableFlag) STABLE else 0) setInfo appliedType(definitions.FunctionClass(0).tpe, List(fv.tpe.resultType))
+            def wrapIfMethod(tpe: Type): Type = tpe match {
+              case MethodType(params, resultType) =>
+                appliedType(FunctionClass(params.length).tpe, (params map (_.tpe)) :+ wrapIfMethod(resultType))
+              case _ => tpe.resultType
+            }
+            meth.newValueParameter(name, newFlags = if (fv.hasStableFlag) STABLE else 0) setInfo appliedType(definitions.FunctionClass(0), wrapIfMethod(fv.tpe))
           }
           meth setInfo MethodType(freeTerms.map(makeParam).toList, AnyClass.tpe)
           minfo.decls enter meth

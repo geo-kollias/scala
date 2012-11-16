@@ -134,7 +134,12 @@ trait GenSymbols {
         val capturedBinding = referenceCapturedVariable(sym)
         Reification(name, capturedBinding, mirrorBuildCall(nme.newFreeTerm, reify(sym.name.toString), capturedBinding, mirrorBuildCall(nme.flagsFromBits, reify(sym.flags)), reify(origin(sym))))
       } else {
-        Reification(name, binding, mirrorBuildCall(nme.newFreeTerm, reify(sym.name.toString), binding, mirrorBuildCall(nme.flagsFromBits, reify(sym.flags)), reify(origin(sym))))
+        val binding1 = sym.tpe match {
+          case MethodType(_, _) => Typed(binding, Function(Nil, EmptyTree))
+          case PolyType(_, MethodType(_, _)) => Typed(binding, Function(Nil, EmptyTree))
+          case _ => binding
+        }
+        Reification(name, binding, mirrorBuildCall(nme.newFreeTerm, reify(sym.name.toString), binding1, mirrorBuildCall(nme.flagsFromBits, reify(sym.flags)), reify(origin(sym))))
       }
     }
 

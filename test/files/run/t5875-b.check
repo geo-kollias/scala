@@ -1,0 +1,36 @@
+Expr[Int => Int]({
+  ((x) => z1(x))
+})
+Expr[Seq[Int] => Seq[Int]]({
+  ((x) => z2((x: _*)))
+})
+Expr[(=> Int) => Int]({
+  ((x) => z3(x))
+})
+Expr[Nothing => Nothing]({
+  ((x) => z4(x))
+})
+Expr[Seq[Nothing] => Seq[Nothing]]({
+  ((x) => z5((x: _*)))
+})
+Expr[(=> Nothing) => Nothing]({
+  ((x) => z6(x))
+})
+Expr[Int => (Int => Int)]({
+  ((x) => ((y) => z7(x)(y)))
+})
+Expr[Seq[Int] => (Seq[Int] => Seq[Int])]({
+  ((x) => ((y) => z8((x: _*))((y: _*))))
+})
+Expr[(=> Int) => ((=> Int) => Int)]({
+  ((x) => ((y) => z9(x)(y)))
+})
+Expr[Nothing => (Nothing => Nothing)]({
+  ((x) => ((y) => z10(x)(y)))
+})
+Expr[Seq[Nothing] => (Seq[Nothing] => Seq[Nothing])]({
+  ((x) => ((y) => z11((x: _*))((y: _*))))
+})
+Expr[(=> Nothing) => ((=> Nothing) => Nothing)]({
+  ((x) => ((y) => z12(x)(y)))
+})
