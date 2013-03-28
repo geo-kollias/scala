@@ -706,6 +706,7 @@ trait StdNames {
     val `macro` : NameType             = "macro"
     val macroThis : NameType           = "_this"
     val macroContext : NameType        = "c"
+    val macroMap: NameType             = "macroMap"
     val main: NameType                 = "main"
     val manifest: NameType             = "manifest"
     val ManifestFactory: NameType      = "ManifestFactory"

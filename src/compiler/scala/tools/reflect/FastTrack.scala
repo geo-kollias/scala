@@ -36,6 +36,9 @@ trait FastTrack {
     ApiUniverseReify bindTo { case (c, Apply(TypeApply(_, List(tt)), List(expr))) => c.materializeExpr(c.prefix.tree, EmptyTree, expr) }
     ReflectRuntimeCurrentMirror bindTo { case (c, _) => scala.reflect.runtime.Macros.currentMirror(c).tree }
     StringContext_f bindTo { case (c, app@Apply(Select(Apply(_, parts), _), args)) => c.macro_StringInterpolation_f(parts, args, app.pos) }
+//    StringContext_f bindTo { case (c, app@Select(Apply(Select(Apply(_, parts), _), args), args1)) => c.macro_StringInterpolation_f(parts, args, app.pos) }
+//    TraversableLike_map bindTo { case (c, app@Apply(Select(Apply(_, parts), _), args)) => c.macro_TraversableLike_macroMap(parts, args, app.pos) }
+    List_macroMap bindTo { case (c, app@Apply(Select(Apply(_, parts), _), args)) => c.macro_List_macroMap(parts, args, app.pos) }
     registry
   }
 }

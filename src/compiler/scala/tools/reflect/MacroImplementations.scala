@@ -147,5 +147,13 @@ abstract class MacroImplementations {
 
     Block(evals.toList, atPos(origApplyPos.focus)(expr)) setPos origApplyPos.makeTransparent
   }
+  
+  def macro_TraversableLike_macroMap(any: Any*): Tree = {
+    Block(List(), EmptyTree)
+  }
+  
+  def macro_List_macroMap(any: Any*): Tree = {
+    Block(List(), EmptyTree)
+  }
 
 }

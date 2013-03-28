@@ -830,7 +830,9 @@ trait Namers extends MethodSynthesis {
      */
     private def assignTypeToTree(tree: ValOrDefDef, defnTyper: Typer, pt: Type): Type = {
       val rhsTpe =
-        if (tree.symbol.isTermMacro) defnTyper.computeMacroDefType(tree, pt)
+        if (tree.symbol.isTermMacro) {
+          defnTyper.computeMacroDefType(tree, pt)
+        }
         else defnTyper.computeType(tree.rhs, pt)
 
       val defnTpe = widenIfNecessary(tree.symbol, rhsTpe, pt)
@@ -1141,13 +1143,17 @@ trait Namers extends MethodSynthesis {
       // fast track macros, i.e. macros defined inside the compiler, are hardcoded
       // hence we make use of that and let them have whatever right-hand side they need
       // (either "macro ???" as they used to or just "???" to maximally simplify their compilation)
-      if (fastTrack contains meth) meth setFlag MACRO
+      if (fastTrack contains meth) {
+        println("fastTrack contains meth")
+        meth setFlag MACRO
+      }
 
       // macro defs need to be typechecked in advance
       // because @macroImpl annotation only gets assigned during typechecking
       // otherwise macro defs wouldn't be able to robustly coexist with their clients
       // because a client could be typechecked before a macro def that it uses
       if (meth.isTermMacro) {
+        println("(meth.isTermMacro")
         typer.computeMacroDefType(ddef, resTpFromOverride)
       }
 
