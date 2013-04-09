@@ -114,6 +114,7 @@ class MacroSupport[C <: Ctx](final val c: C) extends ReflectionSupport {
     def dot(name: Name): InvokeOps         = new InvokeOps(Select(lhs, name))
     def apply(args: Tree*): Tree           = Apply(lhs, args.toList)
     def apply[T1: c.WeakTypeTag] : Tree    = TypeApply(lhs, List(weakTypeOf[T1]) map (t => TypeTree(t)))
+    def apply(t1: Type) : Tree             = TypeApply(lhs, List(t1) map (t => TypeTree(t)))
   }
 
   // Just to verify I needed the METHOD flag, without it I get:

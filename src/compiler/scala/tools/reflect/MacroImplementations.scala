@@ -5,6 +5,9 @@ import scala.reflect.macros.runtime.Context
 import scala.collection.mutable.ListBuffer
 import scala.collection.mutable.Stack
 
+import scala.tools.reflect.declosurify.Declosurify
+//import scala.reflect.reify.Taggers
+
 abstract class MacroImplementations {
   val c: Context
 
@@ -148,12 +151,13 @@ abstract class MacroImplementations {
     Block(evals.toList, atPos(origApplyPos.focus)(expr)) setPos origApplyPos.makeTransparent
   }
   
-  def macro_TraversableLike_macroMap(any: Any*): Tree = {
-    Block(List(), EmptyTree)
+  def macro_TraversableLike_macroMap(expr: Tree, inElemTpe: Type, outElemTpe: Type, inCollTpe: Type, outCollTpe: Type): Tree = {
+//    Context { type PrefixType = InfixMacroOps[A, Coll] }
+    // TODO: make sure that inElemTpe, outElemTpe are compatible with expr's input, output types.
+//    implicit def context2taggers(c0: Context): Taggers { val c: c0.type } = new { val c: c0.type = c0 } with Taggers
+//    val testMatWTT = c.materializeTypeTag(c.universe, EmptyTree, outCollTpe, concrete = false)
+    
+    Declosurify.mapInfix(c)(c.Expr(expr), inElemTpe, outElemTpe, inCollTpe, outCollTpe)
+//    Block(List(), EmptyTree)
   }
-  
-  def macro_List_macroMap(any: Any*): Tree = {
-    Block(List(), EmptyTree)
-  }
-
 }
