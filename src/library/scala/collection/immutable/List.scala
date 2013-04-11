@@ -95,7 +95,6 @@ sealed abstract class List[+A] extends AbstractSeq[A]
   def tail: List[A]
 
   // New methods in List
-  def macroMap[B](f0: A => B): List[B] = ??? // macro
 
   /** Adds an element at the beginning of this list.
    *  @param x the element to prepend.

@@ -39,7 +39,10 @@ trait FastTrack {
     ApiUniverseReify bindTo { case (c, Apply(TypeApply(_, List(tt)), List(expr))) => c.materializeExpr(c.prefix.tree, EmptyTree, expr) }
     ReflectRuntimeCurrentMirror bindTo { case (c, _) => scala.reflect.runtime.Macros.currentMirror(c).tree }
     StringContext_f bindTo { case (c, app@Apply(Select(Apply(_, parts), _), args)) => c.macro_StringInterpolation_f(parts, args, app.pos) }
-    TraversableLike_map bindTo { case (c, app@Apply(TypeApply(Select(prefix@Apply(TypeApply(_, List(inElemTT)), _), _), List(outElemTT)), List(expr))) => c.macro_TraversableLike_macroMap(expr, inElemTT.tpe, outElemTT.tpe, prefix.tpe, app.tpe) }
+    TraversableLike_map bindTo { 
+      case (c, app@Apply(TypeApply(Select(prefix, _), List(outElemTT)), List(f1@Function(List(ValDef(_, _, inElemTT, _)), expr)))) =>
+        c.macro_TraversableLike_macroMap(f1, inElemTT.tpe, expr.tpe, prefix.tpe, app.tpe)
+    }
 //    TraversableLike_map bindTo { case (c, app@Apply(TypeApply(Select(prefix, _), List(tt)), List(expr))) => c.macro_TraversableLike_macroMap[Int, Int, List[Int], List[Int]](expr, tt.tpe, app.pos) }
 //    def mapInfix[A: c0.WeakTypeTag, B: c0.WeakTypeTag, Coll: c0.WeakTypeTag, That: c0.WeakTypeTag](c0: Ctx)(f0: c0.Expr[A => B]): c0.Expr[That]
 //    List_macroMap bindTo { case (c, app@Apply(Select(Apply(_, parts), _), args)) => c.macro_List_macroMap(parts, args, app.pos) }
