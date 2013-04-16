@@ -146,6 +146,7 @@ trait ReflectionSupport {
     def isIndexedSeqType  = tp <:< typeOf[Ind[_]]
     def isTraversableType = tp <:< typeOf[Traversable[_]]
     def isArrayType       = tp <:< typeOf[Array[_]]
+    def isArrayOpsType    = tp <:< typeOf[collection.mutable.ArrayOps[_]]
 
     def orElse(alt: => Type): Type = if (tp eq NoType) alt else tp
   }

@@ -151,13 +151,13 @@ abstract class MacroImplementations {
     Block(evals.toList, atPos(origApplyPos.focus)(expr)) setPos origApplyPos.makeTransparent
   }
   
-  def macro_TraversableLike_macroMap(expr: Tree, inElemTpe: Type, outElemTpe: Type, inCollTpe: Type, outCollTpe: Type): Tree = {
+  def macro_TraversableLike_macroMap(expr: Tree, inElemTpe: Type, outElemTpe: Type, inCollTpe: Type, outCollTpe: Type, bf: Tree): Tree = {
 //    Context { type PrefixType = InfixMacroOps[A, Coll] }
     // TODO: make sure that inElemTpe, outElemTpe are compatible with expr's input, output types.
 //    implicit def context2taggers(c0: Context): Taggers { val c: c0.type } = new { val c: c0.type = c0 } with Taggers
 //    val testMatWTT = c.materializeTypeTag(c.universe, EmptyTree, outCollTpe, concrete = false)
-    
-    Declosurify.mapInfix(c)(c.Expr(expr), inElemTpe, outElemTpe, inCollTpe, outCollTpe)
+
+    Declosurify.mapInfix(c)(c.Expr(expr), inElemTpe, outElemTpe, inCollTpe, outCollTpe, bf)
 //    Block(List(), EmptyTree)
   }
 }

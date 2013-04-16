@@ -64,13 +64,19 @@ class MacroSupport[C <: Ctx](final val c: C) extends ReflectionSupport {
 
   object ArrayPrefix {
     def unapply[T](prefix: c.Expr[T]): Option[Tree] = {
-//      System.err.println("is ArrayPrefix?")
+//      System.err.println(collectionType + " is ArrayPrefix?")
       if (collectionType.isArrayType) Some(prefixCollectionTree) else None
+    }
+  }
+  object ArrayOpsPrefix {
+    def unapply[T](prefix: c.Expr[T]): Option[Tree] = {
+//      System.err.println(collectionType + " is ArrayOpsPrefix?")
+      if (collectionType.isArrayOpsType) Some(prefixCollectionTree) else None
     }
   }
   object LinearPrefix {
     def unapply[T](prefix: c.Expr[T]): Option[Tree] = {
-//      System.err.println("is LinearPrefix?")
+//      System.err.println(collectionType + " is LinearPrefix?")
       if (collectionType.isLinearSeqType) Some(prefixCollectionTree) else None
     }
   }

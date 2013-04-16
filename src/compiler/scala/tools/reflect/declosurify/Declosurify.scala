@@ -1,13 +1,14 @@
 package scala.tools.reflect.declosurify
 
 object Declosurify {
-  def mapInfix[A, B](c0: Ctx)(f0: c0.Expr[A => B], inElemTpe: c0.Type, outElemTpe: c0.Type, inCollTpe: c0.Type, outCollTpe: c0.Type): c0.Tree = {
+  def mapInfix[A, B](c0: Ctx)(f0: c0.Expr[A => B], inElemTpe: c0.Type, outElemTpe: c0.Type, inCollTpe: c0.Type, outCollTpe: c0.Type, bfTree: c0.Tree): c0.Tree = {
     val ctx = new MacroSupport[c0.type](c0)
     import ctx._
     import c.universe._
     
     System.err.println("c0 = " + c0)
     System.err.println("c = " + c)
+    println(showRaw(c.prefix))
  
 //    call.log[A, B, Coll, That]("f0" -> f0.tree)	// only for debugging purposes
 //    call.log[A, B]("f0" -> f0.tree)   
@@ -42,39 +43,56 @@ object Declosurify {
     val closureTree = functionToLocalMethod(fnTree)
     System.err.println("closureTree = " + closureTree)
     
-    val weakTypeOfColl = inCollTpe
-    val newBuilder0       = weakTypeOfColl.typeSymbol.companionSymbol.typeSignature member 'newBuilder
-    System.err.println("newBuilder0 = " + newBuilder0)
-    
     def closure           = closureTree.symbol
-    def newBuilder        = inCollTpe.typeSymbol.companionSymbol.typeSignature member 'newBuilder
+    def newBuilder        = c.prefix match {
+      case ArrayOpsPrefix(tree) => tree match {
+        case Apply(Select(_, _), List(arr)) => arr.tpe.typeSymbol.companionSymbol.typeSignature member 'newBuilder
+      }
+      case _ => inCollTpe.typeSymbol.companionSymbol.typeSignature member 'newBuilder
+    }    
     def closureDef        = c.Expr[Unit](closureTree)
     println("newBuilder(outElemTpe) = " + newBuilder(outElemTpe))
     def builderVal        = c.Expr[Unit](if (isForeach) mkUnit else ValDef(NoMods, 'buf, TypeTree(), newBuilder(outElemTpe)))
+    
+//    Playing with canBuildFrom:
+//    println("bfTree = " + bfTree)
+//    def builder = { // extracted to keep method size under 35 bytes, so that it can be JIT-inlined
+//      val b = bf(repr)
+//      b.sizeHint(this)
+//      b
+//    }
+//    def bf                = bfTree.symbol
+//    def bfExpr            = c.Expr[Unit](bfTree)
+//    val builder           = reify({val b = bfExpr.splice(repr); b.sizeHint(this); b})
+//    val tmpTree = bfTree.symbol(outElemTpe)
+//    def builderVal        = c.Expr[Unit](ValDef(NoMods, 'buf, TypeTree(), tmpTree('xs dot 'repr)))
+//    println("bf('repr) = " + bf('repr))
+    
     def mkCall(arg: Tree) = c.Expr[Unit](if (isForeach) closure(arg) else ('buf dot '+=)(closure(arg)))
     def mkResult          = c.Expr[Nothing](if (isForeach) mkUnit else 'buf dot 'result)
-
-//    def mkIndexed[Prefix: WeakTypeTag](prefixTree: Tree): c.Expr[That] = {
-//      val prefix = c.Expr[Prefix](prefixTree)
-//      val len    = c.Expr[Int]('xs dot 'length) // might be array or indexedseq
-//      val call   = mkCall('xs('i))
-//
-//      reify {
-//        closureDef.splice
-//        builderVal.splice
-//        val xs = prefix.splice
-//        var i  = 0
-//        while (i < len.splice) {
-////          System.err.println("in indexed while...")
-//          call.splice
-//          i += 1
-//        }
-//        mkResult.splice
-//      }
-//    }
     
     System.err.println("c.prefix = " + c.prefix)
     System.err.println("c.prefix.actualType = " + c.prefix.actualType)
+    
+    def mkIndexed[Prefix: WeakTypeTag](prefixTree: Tree): c.Tree = {
+      System.err.println("mkIndexed: prefixTree = " + prefixTree)
+      val prefix = c.Expr[Prefix](prefixTree)
+      val len    = c.Expr[Int]('xs dot 'length) // might be array or indexedseq
+      val call   = mkCall('xs('i))
+
+      reify {
+        closureDef.splice
+        builderVal.splice
+        val xs = prefix.splice
+        var i  = 0
+        while (i < len.splice) {
+//          System.err.println("in indexed while...")
+          call.splice
+          i += 1
+        }
+        mkResult.splice
+      }.tree
+    }
 
     def mkLinear(prefixTree: Tree): c.Tree = {
       System.err.println("mkLinear: prefixTree = " + prefixTree)
@@ -113,7 +131,8 @@ object Declosurify {
 
 //    System.err.println("c.prefix = " + c.prefix)
     val resExpr = c.prefix match {
-//      case ArrayPrefix(tree)       => mkIndexed[Array[A]](tree)
+      case ArrayPrefix(tree)       => mkIndexed[Array[A]](tree)
+      case ArrayOpsPrefix(tree)    => mkIndexed[Array[A]](tree)
 //      case IndexedPrefix(tree)     => mkIndexed[Ind[A]](tree)
       case LinearPrefix(tree)      => mkLinear(tree)
 //      case TraversablePrefix(tree) => mkTraversable(tree)

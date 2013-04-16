@@ -245,7 +245,7 @@ trait TraversableLike[+A, +Repr] extends Any
     b.result
   }
   
-  def macroMap[B](f0: A => B): List[B] = ??? // macro
+  def macroMap[B, That](f0: A => B)(implicit bf: CanBuildFrom[Repr, B, That]): That = ??? // macro
 
   def flatMap[B, That](f: A => GenTraversableOnce[B])(implicit bf: CanBuildFrom[Repr, B, That]): That = {
     def builder = bf(repr) // extracted to keep method size under 35 bytes, so that it can be JIT-inlined
