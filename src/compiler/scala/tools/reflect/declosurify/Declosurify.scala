@@ -68,22 +68,28 @@ object Declosurify {
 //    def builderVal        = c.Expr[Unit](ValDef(NoMods, 'buf, TypeTree(), tmpTree('xs dot 'repr)))
 //    println("bf('repr) = " + bf('repr))
     
-    def mkCall(arg: Tree) = c.Expr[Unit](if (isForeach) closure(arg) else ('buf dot '+=)(closure(arg)))
-    def mkResult          = c.Expr[Nothing](if (isForeach) mkUnit else 'buf dot 'result)
+//    def mkCall(arg: Tree) = c.Expr[Unit](if (isForeach) closure(arg) else ('buf dot '+=)(closure(arg)))
+    def mkCall(arg: Tree) = c.Expr[Unit](('buf dot 'update)('i, closure(arg)))
+//    def mkResult          = c.Expr[Nothing](if (isForeach) mkUnit else 'buf dot 'result)
+    def mkResult          = c.Expr[Nothing](if (isForeach) mkUnit else 'buf)
     
     System.err.println("c.prefix = " + c.prefix)
     System.err.println("c.prefix.actualType = " + c.prefix.actualType)
     
-    def mkIndexed[Prefix: WeakTypeTag](prefixTree: Tree): c.Tree = {
-      System.err.println("mkIndexed: prefixTree = " + prefixTree)
+    def mkIndexed[Prefix](prefixTree: Tree): c.Tree = {
+      System.err.println("mkIndexed: prefixTree = " + prefixTree + ", showRaw(weakTypeOf[Prefix]) = " + showRaw(weakTypeOf[Prefix]))
       val prefix = c.Expr[Prefix](prefixTree)
       val len    = c.Expr[Int]('xs dot 'length) // might be array or indexedseq
       val call   = mkCall('xs('i))
 
+      val arrCons =   Apply(Select(New(TypeTree(outCollTpe)), nme.CONSTRUCTOR), List(('xs dot 'length).lhs))
+      val newArr = c.Expr[Prefix](arrCons)
+      
       reify {
         closureDef.splice
-        builderVal.splice
+//        builderVal.splice
         val xs = prefix.splice
+        var buf = newArr.splice
         var i  = 0
         while (i < len.splice) {
 //          System.err.println("in indexed while...")
@@ -132,7 +138,7 @@ object Declosurify {
 //    System.err.println("c.prefix = " + c.prefix)
     val resExpr = c.prefix match {
       case ArrayPrefix(tree)       => mkIndexed[Array[A]](tree)
-      case ArrayOpsPrefix(tree)    => mkIndexed[Array[A]](tree)
+      case ArrayOpsPrefix(tree)    => mkIndexed[Array[A]](tree dot 'repr)
 //      case IndexedPrefix(tree)     => mkIndexed[Ind[A]](tree)
       case LinearPrefix(tree)      => mkLinear(tree)
 //      case TraversablePrefix(tree) => mkTraversable(tree)
