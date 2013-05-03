@@ -11,9 +11,8 @@ object `package` {
   type Universe         = scala.reflect.api.Universe
   type ClassTag[A]      = scala.reflect.ClassTag[A]
   type Lin[+A]          = scala.collection.LinearSeq[A]
-//  type Lin[+A]          = sample.collection.LinearSeqOptimized[A, sample.collection.immutable.List[A]]
-//  type Lin[+A]			 = sample.collection.LinearSeq[A]
-  type Ind[+A]          = scala.collection.IndexedSeq[A]
+  type ImmutInd[+A]     = scala.collection.IndexedSeq[A]
+  type MutInd[A]        = scala.collection.mutable.IndexedSeq[A]
   type Ctx              = scala.reflect.macros.Context
   type CtxCC[A, CC[_]]  = Context { type PrefixType = InfixMacroOps[A, CC[A]] }
   type CtxColl[A, Coll] = Context { type PrefixType = InfixMacroOps[A, Coll] }

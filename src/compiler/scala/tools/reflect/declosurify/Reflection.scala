@@ -142,11 +142,12 @@ trait ReflectionSupport {
     def isDefinedWithAnnotation[T <: ScalaAnnotation : TypeTag] = definitionAnnotations exists (_.tpe =:= typeOf[T])
     def isUsedWithAnnotation[T <: ScalaAnnotation : TypeTag]    = useAnnotations exists (_.tpe =:= typeOf[T])
 
-    def isLinearSeqType   = tp <:< typeOf[Lin[_]]
-    def isIndexedSeqType  = tp <:< typeOf[Ind[_]]
-    def isTraversableType = tp <:< typeOf[Traversable[_]]
-    def isArrayType       = tp <:< typeOf[Array[_]]
-    def isArrayOpsType    = tp <:< typeOf[collection.mutable.ArrayOps[_]]
+    def isLinearSeqType       = tp <:< typeOf[Lin[_]]
+    def isMutIndexedSeqType   = tp <:< typeOf[MutInd[_]]
+    def isImmutIndexedSeqType = tp <:< typeOf[ImmutInd[_]]
+    def isTraversableType     = tp <:< typeOf[Traversable[_]]
+    def isArrayType           = tp <:< typeOf[Array[_]]
+    def isArrayOpsType        = tp <:< typeOf[collection.mutable.ArrayOps[_]]
 
     def orElse(alt: => Type): Type = if (tp eq NoType) alt else tp
   }

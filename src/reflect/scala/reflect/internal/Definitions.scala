@@ -537,8 +537,6 @@ trait Definitions extends api.StandardDefinitions {
          
 	lazy val TraversableLikeClass                = requiredClass[scala.collection.TraversableLike[_, _]]
 	     def TraversableLike_map                  = getMemberMethod(TraversableLikeClass, nme.macroMap)
-	     
-//	     def List_macroMap                  = getMemberMethod(ListClass, nme.macroMap)
 
     lazy val ScalaSignatureAnnotation = requiredClass[scala.reflect.ScalaSignature]
     lazy val ScalaLongSignatureAnnotation = requiredClass[scala.reflect.ScalaLongSignature]

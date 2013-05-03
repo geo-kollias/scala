@@ -40,7 +40,7 @@ trait FastTrack {
     ReflectRuntimeCurrentMirror bindTo { case (c, _) => scala.reflect.runtime.Macros.currentMirror(c).tree }
     StringContext_f bindTo { case (c, app@Apply(Select(Apply(_, parts), _), args)) => c.macro_StringInterpolation_f(parts, args, app.pos) }
     TraversableLike_map bindTo { 
-//      case (c, app@Apply(TypeApply(Select(prefix, _), List(outElemTT, outCollTT)), List(f1@Function(List(ValDef(_, _, inElemTT, _)), expr)))) => {
+      // TODO(geokollias): r.macroMap({stats; x => x + 1}) is not matched properly
       case (c, app@Apply(Apply(TypeApply(Select(prefix, _), List(outElemTT, outCollTT)), List(f1@Function(List(ValDef(_, _, inElemTT, _)), expr))), List(bf))) => {
         c.macro_TraversableLike_macroMap(f1, inElemTT.tpe, expr.tpe, prefix.tpe, outCollTT.tpe, bf)
       }

@@ -80,16 +80,23 @@ class MacroSupport[C <: Ctx](final val c: C) extends ReflectionSupport {
       if (collectionType.isLinearSeqType) Some(prefixCollectionTree) else None
     }
   }
-  object IndexedPrefix {
+  object ImmutIndexedPrefix {
     def unapply[T](prefix: c.Expr[T]): Option[Tree] = {
 //      System.err.println("is IndexedPrefix?")
-      if (collectionType.isIndexedSeqType) Some(prefixCollectionTree) else None
+      if (collectionType.isImmutIndexedSeqType) Some(prefixCollectionTree) else None
+    }
+  }
+  object MutIndexedPrefix {
+    def unapply[T](prefix: c.Expr[T]): Option[Tree] = {
+//      System.err.println("is IndexedPrefix?")
+      if (collectionType.isMutIndexedSeqType) Some(prefixCollectionTree) else None
     }
   }
   object TraversablePrefix {
     def unapply[T](prefix: c.Expr[T]): Option[Tree] = {
 //      System.err.println("is TraversablePrefix?")
-      if (collectionType.isTraversableType) Some(Select(prefixCollectionTree, 'toIterator)) else None
+//      if (collectionType.isTraversableType) Some(Select(prefixCollectionTree, 'toIterator)) else None
+      if (collectionType.isTraversableType) Some(prefixCollectionTree) else None
     }
   }
 
@@ -123,16 +130,6 @@ class MacroSupport[C <: Ctx](final val c: C) extends ReflectionSupport {
     def apply(t1: Type) : Tree             = TypeApply(lhs, List(t1) map (t => TypeTree(t)))
   }
 
-  // Just to verify I needed the METHOD flag, without it I get:
-  //
-  // [error] scala.ScalaReflectionException: value local1 is not a method
-  // [error]   at scala.reflect.api.Symbols$SymbolApi$class.asMethod(Symbols.scala:151)
-  // [error]   at scala.reflect.internal.Symbols$SymbolContextApiImpl.asMethod(Symbols.scala:73)
-  // [error]   at improving.ContextUtil.newLocalMethod(macros.scala:65)
-  // [error]   at improving.ContextUtil.functionToLocalMethod(macros.scala:73)
-  // [error]   at improving.ContextUtil.functionToLocalMethod(macros.scala:80)
-  // [error]   at improving.Impl$.amapImpl(macros.scala:187)
-  // [error]   at improving.Impl$.amapInfix(macros.scala:151)
   def newLocalMethod(name: TermName, vparams: List[ValDef], resultType: Type): MethodSymbol = {
     import build._
     val ddef = newNestedSymbol(enclMethod, name, enclMethod.pos, Flag.PRIVATE | METHOD, isClass = false)
