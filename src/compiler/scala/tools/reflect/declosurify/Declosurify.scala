@@ -15,8 +15,7 @@ object Declosurify {
     System.err.println("inCollTpe = " + inCollTpe)
     System.err.println("outCollTpe = " + outCollTpe)
     System.err.println("bfTree = " + bfTree)
-    System.err.println("bfTree.tpe = " + bfTree.tpe)
- 
+    
 //    call.log[A, B, Coll, That]("f0" -> f0.tree)	// only for debugging purposes
 //    call.log[A, B]("f0" -> f0.tree)   
 
@@ -60,26 +59,22 @@ object Declosurify {
       case _ => inCollTpe.typeSymbol.companionSymbol.typeSignature member 'newBuilder
     }    
     def closureDef        = c.Expr[Unit](closureTree)
-    println("newBuilder(outElemTpe) = " + newBuilder(outElemTpe))
 //    def builderVal        = c.Expr[Unit](if (isForeach) mkUnit else ValDef(NoMods, 'buf, TypeTree(), newBuilder(outElemTpe)))
-    
-//    Playing with canBuildFrom:
-//    println("bfTree = " + bfTree)
-//    def builder = { // extracted to keep method size under 35 bytes, so that it can be JIT-inlined
-//      val b = bf(repr)
-//      b.sizeHint(this)
-//      b
-//    }
-//    def bf                = bfTree.symbol
-//    def prefixTreeSymbol  = c.prefix.tree.symbol
-//    def bfExpr            = c.Expr[Unit](bfTree)
-//    val builder           = reify({val b = bfExpr.splice(repr); b.sizeHint(this); b})
-//    def builderVal        = c.Expr[Unit](ValDef(NoMods, 'buf, TypeTree(), bf(prefixTreeSymbol dot 'repr)))
-    
-    def builderVal        = c.Expr[Unit](ValDef(NoMods, 'buf, TypeTree(), Apply(bfTree, List())))
+//    def builderVal        = c.Expr[Unit](ValDef(NoMods, 'buf, TypeTree(), bfTree()))
 
-    //    def builderVal0        = c.Expr[Unit](ValDef(NoMods, 'buf, TypeTree(), bfTree()))
-//    def builderVal         =  DefDef(NoMods, freshName("local"), Nil, List(vparams), TypeTree(frestpe), c.resetAllAttrs(fbody.duplicate))
+    def builderVal0       = ValDef(NoMods, 'b, TypeTree(), bfTree())
+    def sizeHintTr        = ('b dot 'sizeHint)(c.prefix.tree)
+    
+    val builderTpe        = c.typeCheck(Select(bfTree, 'apply)).tpe
+    val builderMethodSym  = newLocalMethod(freshName("builder"), Nil, builderTpe)
+    val builderDefTr0     = DefDef(NoMods, freshName("builder"), Nil, Nil, TypeTree(builderTpe), Block(List(builderVal0, sizeHintTr), 'b))
+    builderDefTr0 setSymbol builderMethodSym
+    c.resetAllAttrs(builderDefTr0)
+    val builderDefTr      = c.typeCheck(builderDefTr0).asInstanceOf[DefDef]
+    
+    def builderDef        =  c.Expr[Unit](builderDefTr)
+    def builderDefSym     = builderDefTr.symbol
+    def builderVal        =  c.Expr[Unit](ValDef(NoMods, 'buf, TypeTree(), builderDefSym()))
     println("builderVal = " + builderVal)
         
     def mkCall(arg: Tree) = c.Expr[Unit](if (isForeach) closure(arg) else ('buf dot '+=)(closure(arg)))
@@ -120,6 +115,7 @@ object Declosurify {
 
       reify {
         closureDef.splice
+        builderDef.splice
         builderVal.splice
         val xs = prefix.splice
         var i  = 0
@@ -138,6 +134,7 @@ object Declosurify {
 
       reify {
         closureDef.splice
+        builderDef.splice
         builderVal.splice
         var these = prefix.splice
         while (!these.isEmpty) {
@@ -156,6 +153,7 @@ object Declosurify {
 
       reify {
         closureDef.splice
+        builderDef.splice
         builderVal.splice
         val it = prefix.splice.toIterator
         while (it.hasNext) {
