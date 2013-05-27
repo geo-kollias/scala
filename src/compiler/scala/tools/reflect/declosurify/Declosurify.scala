@@ -66,6 +66,9 @@ object Declosurify {
     def sizeHintTr        = ('b dot 'sizeHint)(c.prefix.tree)
     
     val builderTpe        = c.typeCheck(Select(bfTree, 'apply)).tpe
+    println("builderTpe = " + builderTpe)
+    println("builderTpe.typeArgs = " + builderTpe.typeArgs)
+    println("builderTpe.typeArgs(1).isLinearSeqType " + builderTpe.typeArgs(1).isLinearSeqType)
     val builderMethodSym  = newLocalMethod(freshName("builder"), Nil, builderTpe)
     val builderDefTr0     = DefDef(NoMods, freshName("builder"), Nil, Nil, TypeTree(builderTpe), Block(List(builderVal0, sizeHintTr), 'b))
     builderDefTr0 setSymbol builderMethodSym
@@ -107,25 +110,25 @@ object Declosurify {
       }.tree
     }
     
-    def mkImmutIndexed[Prefix](prefixTree: Tree): c.Tree = {
-      System.err.println("mkImmutIndexed: prefixTree = " + prefixTree)
-      val prefix = c.Expr[Prefix](prefixTree)
-      val len    = c.Expr[Int]('xs dot 'length) // might be array or indexedseq
-      val call   = mkCall('xs('i))
-
-      reify {
-        closureDef.splice
-        builderDef.splice
-        builderVal.splice
-        val xs = prefix.splice
-        var i  = 0
-        while (i < len.splice) {
-          call.splice
-          i += 1
-        }
-        mkResult.splice
-      }.tree
-    }
+//    def mkImmutIndexed[Prefix](prefixTree: Tree): c.Tree = {
+//      System.err.println("mkImmutIndexed: prefixTree = " + prefixTree)
+//      val prefix = c.Expr[Prefix](prefixTree)
+//      val len    = c.Expr[Int]('xs dot 'length) // might be array or indexedseq
+//      val call   = mkCall('xs('i))
+//
+//      reify {
+//        closureDef.splice
+//        builderDef.splice
+//        builderVal.splice
+//        val xs = prefix.splice
+//        var i  = 0
+//        while (i < len.splice) {
+//          call.splice
+//          i += 1
+//        }
+//        mkResult.splice
+//      }.tree
+//    }
 
     def mkLinear(prefixTree: Tree): c.Tree = {
       System.err.println("mkLinear: prefixTree = " + prefixTree)
@@ -156,10 +159,8 @@ object Declosurify {
         builderDef.splice
         builderVal.splice
         val it = prefix.splice.toIterator
-        while (it.hasNext) {
-//          System.err.println("in traversable while...")
+        while (it.hasNext)
           call.splice
-        }
 
         mkResult.splice
       }.tree
@@ -170,7 +171,7 @@ object Declosurify {
       case ArrayPrefix(tree)       => mkMutIndexed[Array[A]](tree)
       case ArrayOpsPrefix(tree)    => mkMutIndexed[Array[A]](tree dot 'repr) // ArrayOps make things much slower.
       case MutIndexedPrefix(tree)  => mkMutIndexed[MutInd[A]](tree)
-      case ImmutIndexedPrefix(tree)=> mkImmutIndexed[ImmutInd[A]](tree)
+//      case ImmutIndexedPrefix(tree)=> mkImmutIndexed[ImmutInd[A]](tree)
       case LinearPrefix(tree)      => mkLinear(tree)
       case TraversablePrefix(tree) => mkTraversable(tree)
       case _                       => mkFallbackImpl
