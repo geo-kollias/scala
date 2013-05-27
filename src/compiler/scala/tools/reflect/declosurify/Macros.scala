@@ -1,7 +1,6 @@
 package scala.tools.reflect.declosurify
 
 import scala.collection.generic.FilterMonadic
-import scala.languageFeature.experimental.macros
 
 class MacroSupport[C <: Ctx](final val c: C) extends ReflectionSupport {
   val u: c.universe.type = c.universe
@@ -53,49 +52,38 @@ class MacroSupport[C <: Ctx](final val c: C) extends ReflectionSupport {
   }
 
   lazy val collectionType: Type = {
-//    System.err.println("c.prefix.actualType = " + c.prefix.actualType)
-//    System.err.println("c.prefix.actualType.typeArgs = " + c.prefix.actualType.typeArgs)
-//    val retCollectionType = Some(c.prefix.actualType.typeArgs) collect { case _ :: coll :: Nil => coll }
     val retCollectionType = Some(c.prefix.actualType)
-//    System.err.println("retCollectionType = " + retCollectionType)
     retCollectionType
   }
   lazy val elementType: Type    = Some(c.prefix.actualType.typeArgs) collect { case elem :: _ :: Nil => elem }
 
   object ArrayPrefix {
     def unapply[T](prefix: c.Expr[T]): Option[Tree] = {
-//      System.err.println(collectionType + " is ArrayPrefix?")
       if (collectionType.isArrayType) Some(prefixCollectionTree) else None
     }
   }
   object ArrayOpsPrefix {
     def unapply[T](prefix: c.Expr[T]): Option[Tree] = {
-//      System.err.println(collectionType + " is ArrayOpsPrefix?")
       if (collectionType.isArrayOpsType) Some(prefixCollectionTree) else None
     }
   }
   object LinearPrefix {
     def unapply[T](prefix: c.Expr[T]): Option[Tree] = {
-//      System.err.println(collectionType + " is LinearPrefix?")
       if (collectionType.isLinearSeqType) Some(prefixCollectionTree) else None
     }
   }
   object ImmutIndexedPrefix {
     def unapply[T](prefix: c.Expr[T]): Option[Tree] = {
-//      System.err.println("is IndexedPrefix?")
       if (collectionType.isImmutIndexedSeqType) Some(prefixCollectionTree) else None
     }
   }
   object MutIndexedPrefix {
     def unapply[T](prefix: c.Expr[T]): Option[Tree] = {
-//      System.err.println("is IndexedPrefix?")
       if (collectionType.isMutIndexedSeqType) Some(prefixCollectionTree) else None
     }
   }
   object TraversablePrefix {
     def unapply[T](prefix: c.Expr[T]): Option[Tree] = {
-//      System.err.println("is TraversablePrefix?")
-//      if (collectionType.isTraversableType) Some(Select(prefixCollectionTree, 'toIterator)) else None
       if (collectionType.isTraversableType) Some(prefixCollectionTree) else None
     }
   }
@@ -114,7 +102,6 @@ class MacroSupport[C <: Ctx](final val c: C) extends ReflectionSupport {
     c.prefix.tree match {
       case Apply(sel, arg :: Nil) if isMacroOpsImplicit(sel.symbol) => arg
       case _                                                         => c.prefix.tree
-//      case _                                                        => Apply(c.prefix.tree, Ident('xs) :: Nil)
     }
   }
   implicit def scalaSymbolToInvokeOps(x: scala.Symbol): InvokeOps = treeToInvokeOps(Ident(x.name: TermName))

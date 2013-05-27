@@ -20,10 +20,7 @@ trait FastTrack {
   implicit def fastTrackEntry2MacroRuntime(entry: FastTrackEntry): MacroRuntime = args => entry.run(args.c)
   type FastTrackExpander = PartialFunction[(MacroContext, Tree), Tree]
   case class FastTrackEntry(sym: Symbol, expander: FastTrackExpander) {
-    def validate(c: MacroContext): Boolean = {
-      println(showRaw(c.expandee))
-      expander.isDefinedAt((c, c.expandee))
-    }
+    def validate(c: MacroContext): Boolean = expander.isDefinedAt((c, c.expandee))
     def run(c: MacroContext): Any = {
       val result = expander((c, c.expandee))
       c.Expr[Nothing](result)(c.WeakTypeTag.Nothing)
@@ -48,9 +45,5 @@ trait FastTrack {
         c.macro_TraversableLike_macroMap(f1, inElemTT.tpe, expr.tpe, prefix.tpe, outCollTT.tpe, bf)
       }
     }
-//    TraversableLike_map bindTo { case (c, app@Apply(TypeApply(Select(prefix, _), List(tt)), List(expr))) => c.macro_TraversableLike_macroMap[Int, Int, List[Int], List[Int]](expr, tt.tpe, app.pos) }
-//    def mapInfix[A: c0.WeakTypeTag, B: c0.WeakTypeTag, Coll: c0.WeakTypeTag, That: c0.WeakTypeTag](c0: Ctx)(f0: c0.Expr[A => B]): c0.Expr[That]
-//    List_macroMap bindTo { case (c, app@Apply(Select(Apply(_, parts), _), args)) => c.macro_List_macroMap(parts, args, app.pos) }
-    registry
   }
 }
